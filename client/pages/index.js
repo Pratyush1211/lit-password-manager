@@ -157,7 +157,7 @@ export default function Home() {
         console.log("Using account: ", accounts[0]);
         const provider = new Web3Provider(window.ethereum);
         const { chainId } = await provider.getNetwork();
-        if (chainId !== 80001) {
+        if (chainId !== 1337) {
           setLog({ type: "info", message: "Switching to Polygon Mumbai Testnet", description: "Please connect to Mumbai Testnet" });
           // switch to the polygon testnet
           await window.ethereum
@@ -170,8 +170,9 @@ export default function Home() {
         setProvider(provider);
         setAccount(accounts[0]);
         const signer = provider.getSigner();
-        const contract = new Contract(contractAddress, abi, signer);
-        setContract(contract);
+        // const contract = new Contract(contractAddress, abi, signer);
+        // setContract(contract);
+        console.log("Wallet connected successfully");
         setLog({ type: "info", message: "Wallet connected successfully", description: "" });
       } else {
         console.log("Please use Web3 enabled browser");
@@ -206,7 +207,7 @@ export default function Home() {
     });
 
   const handleSaveCredentials = async (credentials) => {
-    if (!account || !contract) return setLog({ type: "error", message: "Please connect your wallet", description: "" });
+    if (!account ) return setLog({ type: "error", message: "Please connect your wallet", description: "" });
     // check username, password, domain are not empty
     if (!["site", "username", "password"].every((prop) => credentials[prop]))
       return setLog({ type: "error", message: "Please fill all the fields", description: "" });
@@ -228,31 +229,34 @@ export default function Home() {
     try {
       const credentialsString = JSON.stringify(credentials);
       console.log("credentialsString", credentialsString);
-      const { encryptedString, encryptedSymmetricKey } =
-        await lit.encryptString(credentialsString, accessControlConditions);
-      console.log("encryptedString", encryptedString);
-      console.log("acls-->", accessControlConditions);
+      // const { encryptedString, encryptedSymmetricKey } =
+      //   await lit.encryptString(credentialsString, accessControlConditions);
+      // console.log("encryptedString", encryptedString);
+      // console.log("acls-->", accessControlConditions);
       // save encryptedString and encryptedSymmetricKey to ipfs
       // convert stringblob to base64 string
-      const encryptedStringBase64 = await LitJsSdk.blobToBase64String(
-        encryptedString
-      );
-      console.log("encryptedStringBase64", encryptedStringBase64);
-      console.log("encryptedSymmetricKey", encryptedSymmetricKey);
-      const response = await pinDataToIPFS({
-        encryptedString: encryptedStringBase64,
-        encryptedSymmetricKey
-      });
-      console.log("response", response);
-      setLogMessage(
-        `Credentials encrypted and saved to IPFS: ${response.IpfsHash}`
-      );
-      setLog({ type: "info", message: "Credentials encrypted and saved to IPFS", description: response.IpfsHash });
-      console.log("Save/Update Ipfs hash-->", response.IpfsHash);
+      // const encryptedString = "13123123123123";
+      // const encryptedStringBase64 = await LitJsSdk.blobToBase64String(
+      //   encryptedString
+      // );
+      // console.log("encryptedStringBase64", encryptedStringBase64);
+      // console.log("encryptedSymmetricKey", encryptedSymmetricKey);
+      // const response = await pinDataToIPFS({
+      //   encryptedString: encryptedStringBase64,
+      //   encryptedSymmetricKey
+      // });
+
+
+      // console.log("response", response);
+      // setLogMessage(
+      //   `Credentials encrypted and saved to IPFS: ${response.IpfsHash}`
+      // );
+      // setLog({ type: "info", message: "Credentials encrypted and saved to IPFS", description: response.IpfsHash });
+      // console.log("Save/Update Ipfs hash-->", response.IpfsHash);
       // save ipfs hash to smart contract
       if (credentials?.id) {
         // update
-        const tx = await contract.updateKey(credentials.id, response.IpfsHash);
+        const tx = await contract.updateKey(credentials.id,credentials.id);
         console.log("Update Tx-->", tx.hash);
         setLog({ type: "info", message: "Credentials update submitted. waiting for confirmation", description: tx.hash });
         await tx.wait();
@@ -265,10 +269,10 @@ export default function Home() {
         }, 20000);
         return setLog({ type: "success", message: "Credentials updated successfully", description: "Refreshes in 20 seconds.." });
       }
-      const tx = await contract.addKey(response.IpfsHash);
-      console.log("Add Tx-->", tx.hash);
-      setLog({ type: "info", message: "Transaction submitted. Waiting for confirmation.", description: tx.hash });
-      await tx.wait();
+      // const tx = await contract.addKey(response.IpfsHash);
+      // console.log("Add Tx-->", tx.hash);
+      // setLog({ type: "info", message: "Transaction submitted. Waiting for confirmation.", description: tx.hash });
+      // await tx.wait();
       setLog({ type: "success", message: "Credentials saved successfully", description: "Refreshes in 20 seconds.." });
       setIsAddModalOpen(false);
       setLoading(false);
